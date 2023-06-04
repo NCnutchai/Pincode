@@ -5,94 +5,68 @@ import (
 	"strconv"
 )
 
-type SerialNumber struct {
-	first  int
-	second int
-	third  int
+func checkDoubleDigit(s string) bool {
+	var double_digits []string
+	for i := 0; i < len(s)-1; i++ {
+		if s[i] == s[i+1] {
+			double_digits = append(double_digits, string(s[i])+string(s[i+1]))
+		}
+	}
+
+	if len(double_digits) > 2 {
+		return false
+	}
+	return true
 }
 
-func convertString(b byte) (*int, error) {
-	number, err := strconv.Atoi(string(b))
-	if err != nil {
-		return nil, err
+func checkOrderNumber(s string) bool {
+	var numbers []string
+	for i := 0; i < len(s)-2; i++ {
+		n1, _ := strconv.Atoi(string(s[i]))
+		n2, _ := strconv.Atoi(string(s[i+1]))
+		n3, _ := strconv.Atoi(string(s[i+2]))
+
+		if n1+1 == n2 && n2+1 == n3 {
+			numbers = append(numbers, string(s[i])+string(s[i+1])+string(s[i+2]))
+			return false
+		}
+
+		if n1 == n2+1 && n2 == n3+1 {
+			return false
+		}
 	}
-	return &number, nil
+	return true
 }
 
-func validate_pincode(s string) (*bool, error) {
-	var duplicated []string
-	var serial []string
-	var validate bool
-	if len(s) < 6 {
-		return nil, fmt.Errorf("invalid length")
-	}
-	for i := 0; i < len(s); i++ {
-		var numbers SerialNumber
-		if i+2 >= len(s) {
-			validate = true
-			break
-		}
-		first, err := convertString(s[i])
-		if err != nil {
-			return nil, err
-		}
-		second, err := convertString(s[i+1])
-		if err != nil {
-			return nil, err
-		}
-		third, err := convertString(s[i+2])
-		if err != nil {
-			return nil, err
-		}
-
-		numbers.first = *first
-		numbers.second = *second
-		numbers.third = *third
-
-		if numbers.first == numbers.second {
-			if i == 0 {
-				duplicated = append(duplicated, strconv.Itoa(numbers.first)+strconv.Itoa(numbers.second))
-			}
-
-		}
-		if numbers.second == numbers.third {
-			duplicated = append(duplicated, strconv.Itoa(numbers.second)+strconv.Itoa(numbers.third))
-		}
-		if (numbers.first+1 == numbers.second) && (numbers.second+1 == numbers.third) {
-			serial = append(serial, strconv.Itoa(numbers.third)+strconv.Itoa(numbers.first))
-		}
-		if (numbers.first-1 == numbers.second) && (numbers.second-1 == numbers.third) {
-			serial = append(serial, strconv.Itoa(numbers.third)+strconv.Itoa(numbers.first))
-		}
-
-	}
-	if len(duplicated) > 2 {
-		fmt.Println(duplicated)
-		validate = false
-	} else if len(duplicated) == 2 {
-		if duplicated[0] == duplicated[1] {
-			fmt.Println(duplicated)
-			validate = false
+func checkTripleDigit(s string) bool {
+	var triple_digits []string
+	for i := 0; i < len(s)-2; i++ {
+		if s[i] == s[i+1] && s[i+1] == s[i+2] {
+			triple_digits = append(triple_digits, string(s[i])+string(s[i+1]))
 		}
 	}
-	if len(serial) > 0 {
-		fmt.Println(serial)
-		validate = false
+
+	if len(triple_digits) > 2 {
+		return false
 	}
-	return &validate, nil
+	return true
+}
+
+func validate_pincode(s string) bool {
+	checkLength := len(s) >= 6
+	checkdouble := checkDoubleDigit(s)
+	checkorder := checkOrderNumber(s)
+	checktriple := checkTripleDigit(s)
+	return checkLength && checkdouble && checkorder && checktriple
 }
 
 func main() {
 	var input string
 	fmt.Scan(&input)
-	valid, err := validate_pincode(input)
-	if err != nil {
-		fmt.Println(err)
+	valid := validate_pincode(input)
+	if valid {
+		fmt.Println("valid pincode")
 	} else {
-		if *valid {
-			fmt.Println("valid pincode")
-		} else {
-			fmt.Println("invalid pincode")
-		}
+		fmt.Println("invalid pincode")
 	}
 }
